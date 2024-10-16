@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Pembayaran Cicilan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+        }
+        .invoice {
+            display: none;
+            border: 1px solid #000;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .invoice h3 {
+            text-align: center;
+        }
+        .print-btn {
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+
+        /* CSS khusus untuk pencetakan */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .invoice, .invoice * {
+                visibility: visible;
+            }
+            .invoice {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Form Pembayaran Cicilan</h2>
+        <form id="cicilanForm">
+            <label for="nama">Nama:</label>
+            <input type="text" id="nama" required>
+
+            <label for="alamat">Alamat:</label>
+            <input type="text" id="alamat" required>
+
+            <label for="telepon">Nomor Telepon:</label>
+            <input type="text" id="telepon" required>
+
+            <div id="formFields">
+                <label for="hargaBarang">Harga Barang (Rp):</label>
+                <input type="number" id="hargaBarang" required>
+
+                <label for="dp">Uang Muka / DP (Rp):</label>
+                <input type="number" id="dp" required>
+
+                <label for="jumlahBulan">Jumlah Cicilan (Bulan):</label>
+                <input type="number" id="jumlahBulan" required>
+
+                <label for="bungaTahunan">Bunga Tahunan (%):</label>
+                <input type="number" id="bungaTahunan" step="0.01" required>
+            </div>
+
+            <button type="submit">Hitung Cicilan & Buat Invoice</button>
+        </form>
+
+        <div class="invoice" id="invoice">
+            <h3>Invoice Pembayaran Cicilan</h3>
+            <p><strong>Nama:</strong> <span id="invoiceNama"></span></p>
+            <p><strong>Alamat:</strong> <span id="invoiceAlamat"></span></p>
+            <p><strong>Nomor Telepon:</strong> <span id="invoiceTelepon"></span></p>
+            <p><strong>Harga Barang:</strong> Rp <span id="invoiceHargaBarang"></span></p>
+            <p><strong>Uang Muka / DP:</strong> Rp <span id="invoiceDP"></span></p>
+            <p><strong>Jumlah Cicilan (Bulan):</strong> <span id="invoiceJumlahBulan"></span> bulan</p>
+            <p><strong>Bunga Tahunan:</strong> <span id="invoiceBungaTahunan"></span>%</p>
+            <p><strong>Cicilan Per Bulan:</strong> Rp <span id="invoiceCicilanPerBulan"></span></p>
+        </div>
+
+        <button class="print-btn" id="printBtn" style="display:none;" onclick="window.print()">Print Invoice</button>
+    </div>
+
+    <script>
+        document.getElementById("cicilanForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Ambil nilai dari form
+            const nama = document.getElementById("nama").value;
+            const alamat = document.getElementById("alamat").value;
+            const telepon = document.getElementById("telepon").value;
+            const hargaBarang = parseFloat(document.getElementById("hargaBarang").value);
+            const dp = parseFloat(document.getElementById("dp").value);
+            const jumlahBulan = parseInt(document.getElementById("jumlahBulan").value);
+            const bungaTahunan = parseFloat(document.getElementById("bungaTahunan").value);
+
+            if (!isNaN(hargaBarang) && !isNaN(dp) && !isNaN(jumlahBulan) && !isNaN(bungaTahunan)) {
+                // Harga barang dikurangi DP
+                const sisaPembayaran = hargaBarang - dp;
+
+                // Bunga per bulan
+                const bungaBulanan = bungaTahunan / 12 / 100;
+
+                // Rumus cicilan per bulan: (P x r) / (1 - (1 + r)^-n)
+                const cicilanPerBulan = (sisaPembayaran * bungaBulanan) / (1 - Math.pow(1 + bungaBulanan, -jumlahBulan));
+
+                // Tampilkan data ke dalam invoice
+                document.getElementById("invoiceNama").innerText = nama;
+                document.getElementById("invoiceAlamat").innerText = alamat;
+                document.getElementById("invoiceTelepon").innerText = telepon;
+                document.getElementById("invoiceHargaBarang").innerText = hargaBarang.toFixed(2);
+                document.getElementById("invoiceDP").innerText = dp.toFixed(2);
+                document.getElementById("invoiceJumlahBulan").innerText = jumlahBulan;
+                document.getElementById("invoiceBungaTahunan").innerText = bungaTahunan.toFixed(2);
+                document.getElementById("invoiceCicilanPerBulan").innerText = cicilanPerBulan.toFixed(2);
+
+                // Sembunyikan form harga barang dan bunga
+                document.getElementById("formFields").classList.add("hidden");
+
+                // Tampilkan invoice dan tombol cetak
+                document.getElementById("invoice").style.display = "block";
+                document.getElementById("printBtn").style.display = "block";
+            } else {
+                alert("Silakan isi semua kolom dengan benar.");
+            }
+        });
+    </script>
+</body>
+</html>
